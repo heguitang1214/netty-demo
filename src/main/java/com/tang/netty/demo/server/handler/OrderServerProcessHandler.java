@@ -19,6 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 public class OrderServerProcessHandler extends SimpleChannelInboundHandler<RequestMessage> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RequestMessage requestMessage) throws Exception {
+        // SimpleChannelInboundHandler 也会释放 requestMessage，只不过会释放不了，因为：
+        // RequestMessage 本身并不是一个ReferenceCounted， 在SimpleChannelInboundHandler 对它release应该是没有效果的
+        // 主要的好处是：不用管这些细致末节了，直接release，需要release的会释放，不需要的（没有实现ReferenceCounted）不释放。所以对我们来说省心友好。
         Operation operation = requestMessage.getMessageBody();
         OperationResult operationResult = operation.execute();
 

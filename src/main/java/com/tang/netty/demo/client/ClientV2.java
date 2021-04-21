@@ -37,7 +37,7 @@ public class ClientV2 {
 
         NioEventLoopGroup group = new NioEventLoopGroup();
 
-        try{
+        try {
             bootstrap.group(group);
 
             RequestPendingCenter requestPendingCenter = new RequestPendingCenter();
@@ -83,11 +83,11 @@ public class ClientV2 {
 
             OperationResult operationResult = operationResultFuture.get();
 
-            System.out.println(operationResult);
+            System.out.println("响应结果为：" + operationResult);
 
             channelFuture.channel().closeFuture().sync();
 
-        } finally{
+        } finally {
             group.shutdownGracefully();
         }
 

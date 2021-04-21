@@ -4,6 +4,11 @@ import com.tang.netty.demo.common.ResponseMessage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
+/**
+ * 将请求的处理结果对应到Center上
+ *
+ * @author heguitang
+ */
 public class ResponseDispatcherHandler extends SimpleChannelInboundHandler<ResponseMessage> {
 
     private RequestPendingCenter requestPendingCenter;

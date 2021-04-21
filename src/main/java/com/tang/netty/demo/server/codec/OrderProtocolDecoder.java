@@ -17,6 +17,7 @@ public class OrderProtocolDecoder extends MessageToMessageDecoder<ByteBuf> {
     protected void decode(ChannelHandlerContext ctx, ByteBuf byteBuf, List<Object> out) throws Exception {
         RequestMessage requestMessage = new RequestMessage();
         // 把 byteBuf 解码
+        // MessageToMessageDecoder 中会对 byteBuf 进行释放
         requestMessage.decode(byteBuf);
         
         // 数据传递出去
