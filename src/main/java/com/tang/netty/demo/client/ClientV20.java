@@ -26,7 +26,7 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import javax.net.ssl.SSLException;
 import java.util.concurrent.ExecutionException;
 
-public class ClientV0 {
+public class ClientV20 {
 
     public static void main(String[] args) throws InterruptedException, ExecutionException, SSLException {
 
@@ -87,6 +87,11 @@ public class ClientV0 {
 
             channelFuture.channel().writeAndFlush(requestMessage);
 
+            // 两者区别不大，内部都是wait来等，区别在于一个有返回结果，一个无返回结果；
+            // 作用：当thread通过下面类似的方式设置成守护线程时：
+            // EventLoopGroup group = new NioEventLoopGroup(0, new DefaultThreadFactory("boss", true));
+            // 加这样一句可以阻止客户端直接退出了。同时配合finally（执行关闭）可以实现优美的被动关闭。
+//            channelFuture.channel().closeFuture().get();
             channelFuture.channel().closeFuture().sync();
 
         } finally {

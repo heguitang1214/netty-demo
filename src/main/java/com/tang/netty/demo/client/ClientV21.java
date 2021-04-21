@@ -19,10 +19,10 @@ import javax.net.ssl.SSLException;
 import java.util.concurrent.ExecutionException;
 
 /**
- * This class hadn't add auth or do other improvements. so need to refer {@link ClientV0}
+ * This class hadn't add auth or do other improvements. so need to refer {@link ClientV20}
  */
 @UnstableApi
-public class ClientV1 {
+public class ClientV21 {
 
     public static void main(String[] args) throws InterruptedException, ExecutionException, SSLException {
 

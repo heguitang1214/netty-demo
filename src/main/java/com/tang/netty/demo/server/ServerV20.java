@@ -35,7 +35,7 @@ import java.security.cert.CertificateException;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j
-public class Server {
+public class ServerV20 {
 
     public static void main(String[] args) throws InterruptedException, ExecutionException, CertificateException, SSLException {
 
