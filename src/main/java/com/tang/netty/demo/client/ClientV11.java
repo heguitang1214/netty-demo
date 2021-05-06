@@ -51,7 +51,7 @@ public class ClientV11 {
         channelFuture.sync();
 
         // 发送请求
-        OrderOperation orderOperation = new OrderOperation(10011, "tudou11");
+        OrderOperation orderOperation = new OrderOperation(10011, "tudou10011");
         channelFuture.channel().writeAndFlush(orderOperation);
 
         channelFuture.channel().closeFuture().get();

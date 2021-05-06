@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class ServerIdleCheckHandler extends IdleStateHandler {
+
     public ServerIdleCheckHandler() {
         super(10, 0, 0, TimeUnit.SECONDS);
     }

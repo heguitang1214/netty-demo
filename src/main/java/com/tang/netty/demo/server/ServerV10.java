@@ -43,8 +43,9 @@ public class ServerV10 {
                 pipeline.addLast(new OrderProtocolEncoder());
                 pipeline.addLast(new OrderProtocolDecoder());
 
-                pipeline.addLast(new LoggingHandler(LogLevel.INFO));
+
                 pipeline.addLast(new OrderServerProcessHandler());
+                pipeline.addLast(new LoggingHandler(LogLevel.INFO));
             }
         });
 

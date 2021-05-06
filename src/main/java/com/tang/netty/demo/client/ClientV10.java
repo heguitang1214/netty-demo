@@ -55,7 +55,7 @@ public class ClientV10 {
         channelFuture.sync();
 
         // 发送请求
-        RequestMessage requestMessage = new RequestMessage(IdUtil.nextId(), new OrderOperation(10010, "tudou10"));
+        RequestMessage requestMessage = new RequestMessage(IdUtil.nextId(), new OrderOperation(10010, "tudou10010"));
         channelFuture.channel().writeAndFlush(requestMessage);
 
         channelFuture.channel().closeFuture().get();
