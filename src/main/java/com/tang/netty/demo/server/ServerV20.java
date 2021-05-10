@@ -4,8 +4,10 @@ import com.tang.netty.demo.server.codec.OrderFrameDecoder;
 import com.tang.netty.demo.server.codec.OrderFrameEncoder;
 import com.tang.netty.demo.server.codec.OrderProtocolDecoder;
 import com.tang.netty.demo.server.codec.OrderProtocolEncoder;
+import com.tang.netty.demo.server.handler.AuthHandler;
 import com.tang.netty.demo.server.handler.MetricsHandler;
 import com.tang.netty.demo.server.handler.OrderServerProcessHandler;
+import com.tang.netty.demo.server.handler.ServerIdleCheckHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -17,12 +19,21 @@ import io.netty.channel.socket.nio.NioChannelOption;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.flush.FlushConsolidationHandler;
+import io.netty.handler.ipfilter.IpFilterRuleType;
+import io.netty.handler.ipfilter.IpSubnetFilterRule;
+import io.netty.handler.ipfilter.RuleBasedIpFilter;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.UnorderedThreadPoolEventExecutor;
 
+import javax.net.ssl.SSLException;
+import java.security.cert.CertificateException;
 import java.util.concurrent.ExecutionException;
 
 
@@ -33,7 +44,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class ServerV20 {
 
-    public static void main(String[] args) throws InterruptedException, ExecutionException {
+    public static void main(String[] args) throws InterruptedException, ExecutionException, CertificateException, SSLException {
 
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.channel(NioServerSocketChannel.class);
@@ -61,6 +72,17 @@ public class ServerV20 {
 
         GlobalTrafficShapingHandler globalTrafficShapingHandler = new GlobalTrafficShapingHandler(new NioEventLoopGroup(), 100 * 1024 * 1024, 100 * 1024 * 1024);
 
+        // 127.0.0.1  8
+        IpSubnetFilterRule ipSubnetFilterRule = new IpSubnetFilterRule("127.1.0.1", 16, IpFilterRuleType.REJECT);
+        RuleBasedIpFilter ruleBasedIpFilter = new RuleBasedIpFilter(ipSubnetFilterRule);
+
+        AuthHandler authHandler = new AuthHandler();
+
+        // SSL 单向认证客户端
+        SelfSignedCertificate selfSignedCertificate = new SelfSignedCertificate();
+        System.out.println("证书位置：" + selfSignedCertificate.certificate());
+        SslContext sslContext = SslContextBuilder.forServer(selfSignedCertificate.certificate(), selfSignedCertificate.privateKey()).build();
+
         serverBootstrap.childHandler(new ChannelInitializer<NioSocketChannel>() {
             @Override
             protected void initChannel(NioSocketChannel ch) throws Exception {
@@ -68,8 +90,18 @@ public class ServerV20 {
                 // 放在这里，可以打印出原始数据
 //                pipeline.addLast(new LoggingHandler(LogLevel.DEBUG));
 
+                // 黑白名单
+                pipeline.addLast("IPfilter", ruleBasedIpFilter);
+
                 // 流量整形
                 pipeline.addLast("TShandle", globalTrafficShapingHandler);
+
+                // 空闲监测
+                pipeline.addLast("idleCheck ", new ServerIdleCheckHandler());
+
+                // SSL
+                SslHandler sslHandler = sslContext.newHandler(ch.alloc());
+                pipeline.addLast("SSL", sslHandler);
 
                 // 完善”Handler“名称
                 pipeline.addLast("FrameDecoder", new OrderFrameDecoder());
@@ -80,6 +112,9 @@ public class ServerV20 {
 
                 // 可视化
                 pipeline.addLast("metricsHandler", metricsHandler);
+
+                // 授权,必须在OrderProtocolDecoder之后
+                pipeline.addLast(authHandler);
 
                 // 解析后的日志数据
                 pipeline.addLast(new LoggingHandler(LogLevel.INFO));

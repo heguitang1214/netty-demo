@@ -9,6 +9,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * 授权
+ *
+ * @author heguitang
+ */
 @Slf4j
 @ChannelHandler.Sharable
 public class AuthHandler extends SimpleChannelInboundHandler<RequestMessage> {
@@ -19,6 +24,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<RequestMessage> {
             Operation operation = msg.getMessageBody();
             if (operation instanceof AuthOperation) {
                 AuthOperation authOperation = (AuthOperation) operation;
+//                AuthOperation authOperation = AuthOperation.class.cast(operation);
                 AuthOperationResult authOperationResult = authOperation.execute();
                 if (authOperationResult.isPassAuth()) {
                     log.info("pass auth");
@@ -27,6 +33,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<RequestMessage> {
                     ctx.close();
                 }
             } else {
+                // 拒绝请求，期望第一个请求是做授权的
                 log.error("expect first msg is auth");
                 ctx.close();
             }
@@ -34,6 +41,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<RequestMessage> {
             log.error("exception happen for: " + e.getMessage(), e);
             ctx.close();
         } finally {
+            // 移除授权的Handler，下次不需要再授权
             ctx.pipeline().remove(this);
         }
 

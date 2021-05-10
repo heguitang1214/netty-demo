@@ -7,10 +7,16 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 空闲监测
+ *
+ * @author heguitang
+ */
 @Slf4j
 public class ServerIdleCheckHandler extends IdleStateHandler {
 
     public ServerIdleCheckHandler() {
+        // 10s 没有接收到数据
         super(10, 0, 0, TimeUnit.SECONDS);
     }
 
@@ -18,6 +24,7 @@ public class ServerIdleCheckHandler extends IdleStateHandler {
     protected void channelIdle(ChannelHandlerContext ctx, IdleStateEvent evt) throws Exception {
         if (evt == IdleStateEvent.FIRST_READER_IDLE_STATE_EVENT) {
             log.info("idle check happen, so close the connection");
+            // 断掉连接
             ctx.close();
             return;
         }
